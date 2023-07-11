@@ -2,6 +2,8 @@ package com.example.demo.controller;
 
 import com.example.demo.domain.Address;
 import com.example.demo.domain.Customer;
+import com.example.demo.domain.CustomerDto;
+import com.example.demo.domain.Product;
 import com.example.demo.service.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -19,12 +21,12 @@ public class Controller {
 
 
     @PostMapping("/customers")
-    public Customer createCustomer(@RequestBody Customer customer) {
+    public CustomerDto createCustomer(@RequestBody Customer customer) {
         return customerService.createCustomer(customer);
     }
 
     @PutMapping("/customers/{id}")
-    public Customer updateCustomer(@PathVariable long id, @RequestBody Customer updatedCustomer) {
+    public CustomerDto updateCustomer(@PathVariable("id") long id, @RequestBody Customer updatedCustomer) {
         return customerService.updateCustomer(id, updatedCustomer);
     }
 
@@ -35,19 +37,14 @@ public class Controller {
 
 
     @GetMapping("/customers")
-    public List<Customer> allCustomer() {
+    public List<CustomerDto> allCustomer() {
         return customerService.allCustomer();
     }
 
     @GetMapping("/customers/{id}")
-    public Customer getCustomer(@PathVariable long id) {
+    public CustomerDto getCustomer(@PathVariable long id) {
         return customerService.getCustomer(id);
     }
-
-
-
-
-
 
     @PostMapping("/addresses")
     public Address createAddress(@RequestBody Address address) {
@@ -71,5 +68,14 @@ public class Controller {
     public Address getAddress(@PathVariable long id) {
         return customerService.getAddress(id);
     }
+
+
+    @PostMapping("/customers/products/{id}")
+    public Product buyProduct(@PathVariable long id, @RequestBody Product product)
+    {
+         return customerService.buyProduct(id, product);
+    }
+
+
 
 }

@@ -2,27 +2,43 @@ package com.example.demo.service;
 
 import com.example.demo.domain.Address;
 import com.example.demo.domain.Customer;
+import com.example.demo.domain.CustomerDto;
+import com.example.demo.domain.Product;
+import lombok.extern.log4j.Log4j2;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
+import java.lang.reflect.Array;
+import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
 @Service
+@Log4j2
 public class CustomerService implements ServiceInterface {
     private final CustomerRepo customerRepository;
     private final AdressRepo addressRepository;
+    private final ProductRepo productRepo;
 
-    public CustomerService(CustomerRepo customerRepository, AdressRepo addressRepository) {
+    private final ModelMapper modelMapper;
+
+    public CustomerService(CustomerRepo customerRepository, AdressRepo addressRepository, ProductRepo productRepo,ModelMapper modelMapper) {
         this.customerRepository = customerRepository;
         this.addressRepository = addressRepository;
+        this.productRepo= productRepo;
+        this.modelMapper=modelMapper;
     }
 
 
-    public Customer getCustomer(Long customerId) {
-        return customerRepository.findById(customerId)
-                .orElseThrow(() -> new NoSuchElementException("Customer not found"));
+    public CustomerDto getCustomer(Long customerId) {
+        return modelMapper.map(customerRepository.findById(customerId).orElseThrow(() -> new NoSuchElementException("Customer not found")),CustomerDto.class);
+
     }
-    public Customer createCustomer(Customer customer) {
-        return customerRepository.save(customer);
+    public CustomerDto createCustomer(Customer customer) {
+        return modelMapper.map(customerRepository.save(customer), CustomerDto.class);
+    }
+
+    public List<CustomerDto> allCustomer() {
+       return  Arrays.asList(modelMapper.map(customerRepository.findAll(),CustomerDto[].class));
     }
     public void deleteCustomer(Long id) {
         if (customerRepository.existsById(id)) {
@@ -33,21 +49,17 @@ public class CustomerService implements ServiceInterface {
     }
 
 
-    public Customer updateCustomer(Long id, Customer updatedCustomer) throws NoSuchElementException {
+    public CustomerDto updateCustomer(Long id, Customer updatedCustomer) throws NoSuchElementException {
         Customer existingCustomer = customerRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException());
 
         existingCustomer.setName(updatedCustomer.getName());
         existingCustomer.setEmail(updatedCustomer.getEmail());
-        existingCustomer.setDateOfBirth(updatedCustomer.getDateOfBirth());
+        existingCustomer.setProducts(updatedCustomer.getProducts());
 
-
-
-        return customerRepository.save(existingCustomer);
+        return modelMapper.map(customerRepository.save(existingCustomer),CustomerDto.class);
     }
-    public List<Customer> allCustomer() {
-        return customerRepository.findAll();
-    }
+
 
 
     public Address createAddress(Address address) {
@@ -82,7 +94,22 @@ public class CustomerService implements ServiceInterface {
     }
 
 
+    public Product buyProduct(Long id, Product product) {
+
+        customerRepository.findById(id).get().getProducts().add(product);
+        product.setCustomer(customerRepository.findById(id).get());
+        return productRepo.save(product);
+
+    }
+
+
+
+
+
+
 }
+
+
 
 
 
